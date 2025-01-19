@@ -7,6 +7,6 @@ python3 train.py --cfg_json ./configs/wide.json\
                 --batch-size 32\
                 --train_loss_fn mse_loss\
                 --lr 0.001\
-                --case 6470rte\
+                --case 14v2\
                 --model MaskEmbdMultiMPN\
                 --save

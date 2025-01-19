@@ -57,7 +57,7 @@ class PowerFlowData(InMemoryDataset):
     """
     partial_file_names = [
         "edge_features.npy",
-        "node_features.npy",
+        "node_features_x.npy",
     ]
     split_order = {
         "train": 0,
@@ -107,7 +107,7 @@ class PowerFlowData(InMemoryDataset):
         else:
             self.edgemean, self.edgestd = None, None
         self.data, self.slices = self._normalize_dataset(
-            *torch.load(self.processed_paths[self.split_order[self.task]]))  # necessary, do not forget!
+            *torch.load(self.processed_paths[self.split_order[self.task]], weights_only=False))  # necessary, do not forget!
 
     def get_data_dimensions(self):
         return self[0].x.shape[1], self[0].y.shape[1], self[0].edge_attr.shape[1]
@@ -188,7 +188,8 @@ class PowerFlowData(InMemoryDataset):
             for idx in range(len(split_edge_features)):
                 # shape of element in split_xx: [N, n_edges/n_nodes, n_features]
                 # for each case, process train, val, test split
-                y = split_node_features[idx][:, :, 2:] # shape (N, n_ndoes, 4); Vm, Va, P, Q
+                y = split_node_features[idx][:, :, 2:6] # shape (N, n_ndoes, 4); Vm, Va, P, Q
+                print(y.shape)
                 bus_type = split_node_features[idx][:, :, 1].type(torch.long) # shape (N, n_nodes)
                 bus_type_mask = torch.tensor(self.bus_type_mask)[bus_type] # shape (N, n_nodes, 4)
                 x = y.clone()*(1.-bus_type_mask) # shape (N, n_nodes, 4)
@@ -218,24 +219,28 @@ class PowerFlowData(InMemoryDataset):
 
 
 def main():
+    data_file_path = "/Users/zyangzhang/Desktop/codes/PowerAI/codes/PoweFlowNet/data/powerflow/raw"
+    root_dir_path = "/Users/zyangzhang/Desktop/codes/PowerAI/codes/PoweFlowNet/data/powerflow"
+    case = "case14v2"
     try:
         # shape = (N, n_edges, 7)       (from, to, ...)
-        edge_features = np.load("data/raw/case14_edge_features.npy")
+        edge_features = np.load(f"{data_file_path}/{case}_edge_features.npy")
         # shape = (N, n_nodes, n_nodes)
-        adj_matrix = np.load("data/raw/case14_adjacency_matrix.npy")
+        adj_matrix = np.load(f"{data_file_path}/{case}_adjacency_matrix.npy")
         # shape = (N, n_nodes, 9)
-        node_features_x = np.load("data/raw/case14_node_features_x.npy")
+        node_features_x = np.load(f"{data_file_path}/{case}_node_features_x.npy")
         # shape = (N, n_nodes, 8)
-        node_features_y = np.load("data/raw/case14_node_features_y.npy")
+        node_features_y = np.load(f"{data_file_path}/{case}_node_features_y.npy")
     except FileNotFoundError:
         print("File not found.")
+        return -1
 
     print(f"edge_features.shape = {edge_features.shape}")
     print(f"adj_matrix.shape = {adj_matrix.shape}")
     print(f"node_features_x.shape = {node_features_x.shape}")
     print(f"node_features_y.shape = {node_features_y.shape}")
 
-    trainset = PowerFlowData(root="data", case=14,
+    trainset = PowerFlowData(root=root_dir_path, case="14v2",
                              split=[.5, .2, .3], task="train")
     train_loader = torch_geometric.loader.DataLoader(
         trainset, batch_size=12, shuffle=True)
@@ -243,6 +248,7 @@ def main():
     print(trainset[0])
     print(next(iter(train_loader)))
     pass
+    return 0
 
 
 if __name__ == "__main__":

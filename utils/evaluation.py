@@ -56,7 +56,7 @@ def evaluate_epoch(
         loader: DataLoader,
         loss_fn: Callable,
         device: str = 'cpu',
-        pre_loss_fn: Callable|None=None,) -> float:
+        pre_loss_fn: Union[Callable, None] = None) -> float:
     """
     Evaluates the performance of a trained neural network model on a dataset using the specified data loader.
 
@@ -76,6 +76,8 @@ def evaluate_epoch(
     pbar = tqdm(loader, total=len(loader), desc='Evaluating:')
     for data in pbar:
         data = data.to(device)
+        if torch.min(data.edge_index) > 0:
+            data.edge_index -= 1 
         out = model(data)
 
         if isinstance(loss_fn, Masked_L2_loss):
@@ -109,7 +111,7 @@ def evaluate_epoch_v2(
         loader: DataLoader,
         loss_fn: Callable,
         device: str = 'cpu',
-        pre_loss_fn: Callable|None=None,) -> float:
+        pre_loss_fn: Union[Callable, None] = None) -> float:
     """
     Evaluates the performance of a trained neural network model on a dataset using the specified data loader.
 
@@ -130,6 +132,8 @@ def evaluate_epoch_v2(
     for data in pbar:
         loss_terms = {}
         data = data.to(device)
+        if torch.min(data.edge_index) > 0:
+            data.edge_index -= 1
         out = model(data)
 
         if isinstance(loss_fn, Masked_L2_loss):

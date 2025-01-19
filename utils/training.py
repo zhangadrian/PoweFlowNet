@@ -54,6 +54,8 @@ def train_epoch(
     pbar = tqdm(loader, total=len(loader), desc='Training')
     for data in pbar:
         data = data.to(device) 
+        if torch.min(data.edge_index) > 0:
+            data.edge_index -= 1
         optimizer.zero_grad()
         out = model(data)   # (N, 6), care about the first four. 
                             # data.y.shape == (N, 6)

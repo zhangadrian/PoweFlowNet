@@ -14,6 +14,7 @@ from utils.argument_parser import argument_parser
 from utils.training import train_epoch, append_to_json
 from utils.evaluation import evaluate_epoch
 from utils.custom_loss_functions import Masked_L2_loss, PowerImbalance, MixedMSEPoweImbalance
+from utils.file_utils import mkdir
 
 import wandb
 
@@ -24,6 +25,9 @@ def main():
     run_id = datetime.now().strftime("%Y%m%d") + '-' + str(random.randint(0, 9999))
     LOG_DIR = 'logs'
     SAVE_DIR = 'models'
+    mkdir(LOG_DIR)
+    mkdir(SAVE_DIR)
+    mkdir(os.path.join(LOG_DIR, 'train_log'))
     TRAIN_LOG_PATH = os.path.join(LOG_DIR, 'train_log/train_log_'+run_id+'.pt')
     SAVE_LOG_PATH = os.path.join(LOG_DIR, 'save_logs.json')
     SAVE_MODEL_PATH = os.path.join(SAVE_DIR, 'model_'+run_id+'.pt')

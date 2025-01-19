@@ -41,6 +41,7 @@ class EdgeAggregation(MessagePassing):
         
         # Step 2: Calculate the degree of each node.
         row, col = edge_index
+        # print(torch.min(row), torch.max(row), torch.min(col), torch.max(col))
         deg = degree(col, x.size(0), dtype=x.dtype)
         deg_inv_sqrt = deg.pow(-0.5)
         deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0.
